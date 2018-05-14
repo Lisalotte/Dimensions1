@@ -7,6 +7,10 @@ class ofApp : public ofBaseApp{
 	public:
 
 		ofCylinderPrimitive cylinder;
+		ofNode myNode;
+		
+		float myRotation;
+		float x_self, y_self, z_self;
 
 		void setup();
 		void update();
