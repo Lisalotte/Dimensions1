@@ -3,6 +3,8 @@
 //--------------------------------------------------------------
 void ofApp::setup(){
 	ofBackground(0);  // Clear the screen with a black color
+
+	cylinder.set(100, 1);
 }
 
 //--------------------------------------------------------------
@@ -12,7 +14,19 @@ void ofApp::update(){
 
 //--------------------------------------------------------------
 void ofApp::draw(){
+	ofEnableDepthTest();
 
+	ofNoFill();
+	ofSetColor(255);
+	ofPushMatrix();
+	ofPoint p1(500, 500, 0);
+	ofTranslate(p1);
+	//ofRotateX(90);
+	//ofDrawCylinder(0, 0, 0, 100, 1);
+	cylinder.setCapped(false);
+	cylinder.setResolution(20,20,20);
+	cylinder.drawWireframe();
+	ofPopMatrix();
 }
 
 //--------------------------------------------------------------

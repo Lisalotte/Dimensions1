@@ -5,6 +5,9 @@
 class ofApp : public ofBaseApp{
 
 	public:
+
+		ofCylinderPrimitive cylinder;
+
 		void setup();
 		void update();
 		void draw();
