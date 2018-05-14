@@ -6,11 +6,13 @@ class ofApp : public ofBaseApp{
 
 	public:
 
-		ofCylinderPrimitive cylinder;
+		ofCylinderPrimitive cylinder, cyline;
 		ofNode myNode;
 		
 		float myRotation;
 		float x_self, y_self, z_self;
+
+		bool lineToCyl;
 
 		void setup();
 		void update();

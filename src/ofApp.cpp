@@ -4,38 +4,77 @@
 void ofApp::setup(){
 	ofBackground(0);  // Clear the screen with a black color
 
-	cylinder.set(1, 500);
+	cylinder.set(250, 1);
+	cyline.set(0.5, 500);
 
 	myRotation = 0;
+	lineToCyl = false;
 }
 
 //--------------------------------------------------------------
 void ofApp::update(){
-
+	if (myRotation >= 90 || myRotation <= -90) {
+		lineToCyl = true;
+	}
 }
 
 //--------------------------------------------------------------
 void ofApp::draw(){
 	ofEnableDepthTest();
 
-	//ofNoFill();
+	ofNoFill();
 	ofSetColor(255);
 	ofPushMatrix();
 	ofPoint p1(ofGetWidth()*0.5 - x_self, ofGetHeight()*0.5 + y_self, 0 + z_self);
 	ofTranslate(p1);
 
+	ofSetColor(255, 0, 0);
+	ofLine(-1000, 0, 0, 1000, 0, 0);
+	ofSetColor(0, 255, 0);
+	ofLine(0, -1000, 0, 0, 1000, 0);
+	ofSetColor(0, 0, 255);
+	ofLine(0, 0, 1000, 0, 0, -1000);
+	ofSetColor(255);
 	ofPushMatrix();
-	//ofRotateX(90);
+
+	// Adjust to user input
 	ofRotateX(myRotation);
-	ofLine(0, 0, 250, 0, 0, -250);
-	ofSetLineWidth(5);
-	ofPushMatrix();
-	ofTranslate(0, 0, 250);
-	ofDrawSphere(2.5);
-	ofTranslate(0, 0, -500);
-	ofDrawSphere(2.5);
-	ofPopMatrix();
-	//cylinder.draw();
+
+	if (!lineToCyl) {
+		/*
+		// Draw a line
+		ofLine(0, 0, 250, 0, 0, -250);
+		ofSetLineWidth(1);
+		// Draw the begin and end caps
+		ofPushMatrix();
+		ofTranslate(0, 0, 250);
+		ofDrawEllipse(ofPoint(0, 0, 0), 1, 1);
+		ofTranslate(0, 0, -500);
+		ofDrawEllipse(ofPoint(0, 0, 0), 1, 1);
+		ofPopMatrix();
+		*/
+		ofPushMatrix();
+		ofRotateX(90);
+		cyline.setResolution(50, 50, 50);
+		cyline.draw();
+		ofPopMatrix();
+		
+		cerr << "LINE" << endl;
+	} else {
+		ofPushMatrix();
+		ofRotateZ(90);
+		cylinder.setResolution(50, 50, 50);
+		cylinder.setCapped(false);
+		cylinder.draw();
+		ofPopMatrix();
+		cerr << "NOT LINE" << endl;
+		ofPushMatrix();
+		ofRotateX(90);
+		cyline.setResolution(50, 50, 50);
+		cyline.draw();
+		ofPopMatrix();
+	}
+	
 	ofPopMatrix();
 
 	
