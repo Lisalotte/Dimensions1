@@ -8,9 +8,11 @@ class ofApp : public ofBaseApp{
 
 		ofCylinderPrimitive cylinder, cyline;
 		ofNode myNode;
+		ofCamera cam;
 		
-		float myRotation;
+		float x_rot, y_rot, z_rot;
 		float x_self, y_self, z_self;
+		float lineLength, angleH, angleV, distance, roll;
 
 		bool lineToCyl;
 

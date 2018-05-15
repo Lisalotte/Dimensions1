@@ -2,32 +2,67 @@
 
 //--------------------------------------------------------------
 void ofApp::setup(){
-	ofBackground(0);  // Clear the screen with a black color
+	//just set up the openFrameworks stuff
+	ofSetFrameRate(60);
+	ofSetVerticalSync(true);
+	ofBackground(0);  // Clear the screen with a black color	
 
 	cylinder.set(250, 1);
 	cyline.set(0.5, 500);
 
-	myRotation = 0;
 	lineToCyl = false;
+	lineLength = 1;
+	distance = 500.f;
+	roll = angleH = angleV = 0;
 }
 
 //--------------------------------------------------------------
 void ofApp::update(){
-	if (myRotation >= 90 || myRotation <= -90) {
+	if (angleV >= 90 || angleV <= -90) {
 		lineToCyl = true;
 	}
+	if (!lineToCyl) {
+		cam.orbit(0, angleV, distance);
+	}
+	else {
+		cam.orbit(angleH, 0, distance);
+	}
+	cam.roll(roll);
 }
 
 //--------------------------------------------------------------
 void ofApp::draw(){
+	//ofEnableLighting();
+	//ofEnableSmoothing();
 	ofEnableDepthTest();
+
+	//glMatrixMode(GL_PROJECTION);
+	//cam.setFov(180);
+	//cam.setNearClip(1);
+	//cam.setFarClip(2000);
+	cam.begin();
+
+	ofPushMatrix(); // global positioning
+	/*
+	ofPoint p1(ofGetWidth()*0.5 - x_self, ofGetHeight()*0.5 + y_self, 0 + z_self);
+	ofTranslate(p1);
+	*//*
+	// Adjust to user input
+	ofRotateX(x_rot);
+	ofRotateY(y_rot);
+	ofRotateZ(z_rot);
+	*/
+
+	ofVec3f center = ofVec3f(0, 0, 0);
+	//cam.lookAt(center);
+
+	ofPushMatrix(); // object positioning
 
 	ofNoFill();
 	ofSetColor(255);
-	ofPushMatrix();
-	ofPoint p1(ofGetWidth()*0.5 - x_self, ofGetHeight()*0.5 + y_self, 0 + z_self);
-	ofTranslate(p1);
 
+	/*
+	// x,y,z-axes
 	ofSetColor(255, 0, 0);
 	ofLine(-1000, 0, 0, 1000, 0, 0);
 	ofSetColor(0, 255, 0);
@@ -35,82 +70,51 @@ void ofApp::draw(){
 	ofSetColor(0, 0, 255);
 	ofLine(0, 0, 1000, 0, 0, -1000);
 	ofSetColor(255);
+	*/
 	ofPushMatrix();
-
-	// Adjust to user input
-	ofRotateX(myRotation);
-
 	if (!lineToCyl) {
-		/*
-		// Draw a line
-		ofLine(0, 0, 250, 0, 0, -250);
-		ofSetLineWidth(1);
-		// Draw the begin and end caps
-		ofPushMatrix();
-		ofTranslate(0, 0, 250);
-		ofDrawEllipse(ofPoint(0, 0, 0), 1, 1);
-		ofTranslate(0, 0, -500);
-		ofDrawEllipse(ofPoint(0, 0, 0), 1, 1);
-		ofPopMatrix();
-		*/
-		ofPushMatrix();
-		ofRotateX(90);
-		cyline.setResolution(50, 50, 50);
-		cyline.draw();
-		ofPopMatrix();
-		
+		cylinder.setRadius(lineLength);
 		cerr << "LINE" << endl;
 	} else {
-		ofPushMatrix();
-		ofRotateZ(90);
-		cylinder.setResolution(50, 50, 50);
-		cylinder.setCapped(false);
-		cylinder.draw();
-		ofPopMatrix();
 		cerr << "NOT LINE" << endl;
-		ofPushMatrix();
-		ofRotateX(90);
-		cyline.setResolution(50, 50, 50);
-		cyline.draw();
-		ofPopMatrix();
 	}
-	
-	ofPopMatrix();
-
-	
-//	myNode.tilt(20);
-	//cerr << z << endl;
-
-	/*
+	ofRotateZ(90);
+	cylinder.setResolution(50, 50, 50);
 	cylinder.setCapped(false);
-	cylinder.setResolution(20,20,20);
-	cylinder.drawWireframe();
-	*/
+	cylinder.draw();
 	ofPopMatrix();
+
+	ofPopMatrix(); // objects
+
+	ofPopMatrix(); // global
+
+	cam.end();
+
+	//ofDisableLighting();
 }
 
 //--------------------------------------------------------------
-void ofApp::keyPressed(int key){
-
+void ofApp::keyPressed(int key) {
 	switch (key) {
 	case OF_KEY_LEFT:
-		x_self = x_self - 5;
+		angleH -= 1;
 		break;
 	case OF_KEY_RIGHT:
-		x_self = x_self + 5;
+		angleH += 1;
 		break;
 	case OF_KEY_UP:
-		//y_self = y_self + 1;
-		//z_self = z_self + 5;
-		myRotation = myRotation + 1;
+		angleV += 1;
 		break;
 	case OF_KEY_DOWN:
-		//y_self = y_self - 1;
-		//z_self = z_self - 5;
-		myRotation = myRotation - 1;
+		angleV -= 1;
+		break;
+	case 'r':
+		roll++;
 		break;
 	}
-
+	if (angleV < 90 && angleV > -90) {
+		lineLength += 2;
+	} 
 }
 
 //--------------------------------------------------------------
