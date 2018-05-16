@@ -20,6 +20,7 @@ class ofApp : public ofBaseApp{
 		bool lineToCircle;
 		bool circleToSphere;
 		bool allowCamRotate;
+		int counter;
 
 		void setup();
 		void update();

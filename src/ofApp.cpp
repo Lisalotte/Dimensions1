@@ -37,6 +37,7 @@ void ofApp::setup(){
 		sphericalPositions[i][1] = ofRandomuf() * 360;
 		sphericalPositions[i][2] = ofRandomuf() * 1000 + 1000;
 	}
+	counter = 0;
 }
 
 //--------------------------------------------------------------
@@ -45,6 +46,20 @@ void ofApp::update(){
 	if (angleV >= 90 || angleV <= -90) {
 		lineToCircle = true;
 	}
+
+	if (angleV == 360) {
+		angleV = 0;
+	}
+	if (angleH == 360) {
+		angleH = 0;
+	}
+	if (angleV == -360) {
+		angleV = 0;
+	}
+	if (angleH == -360) {
+		angleH = 0;
+	}
+	
 	// line (1D)
 	if (!lineToCircle) { 
 		if (ofGetKeyPressed(OF_KEY_UP) || ofGetKeyPressed(OF_KEY_DOWN)) { // only when up or down is pressed
@@ -52,19 +67,37 @@ void ofApp::update(){
 			allowCamRotate = true;
 			angleH = 0;
 			if (lineLength < 500) lineLength += 1;
-		}
+	}
 	}
 	// circle (2D)
 	else if (!circleToSphere) { // keep rotating the sphere
-		if (angleH <= 90 && angleH >= -90) {
-			allowCamRotate = true;
+		cerr << angleH << endl;
+		cerr << counter << endl;
+		//if (angleH <= 90 && angleH >= -90) {
+		//	allowCamRotate = true;
 			//cam.orbit(angleH, angleV, distance);
+
+		if (counter <= 180 ){
+			cerr << "countcountocunt" << endl;
+			angleV = 0;
+			allowCamRotate = true;
 		}
+		else if (angleH < 90 && angleH > -90) { // als counter groter is dan 300 en de cirkel nog niet plat is
+			angleV = 0;
+			allowCamRotate = true;
+			cerr << "BLA" << endl;
+		}
+	}
 		else { // switch to 3D
 			lineToCircle = false;
 			circleToSphere = true;
-		}
+
+	//cam.roll(roll);
+
+	if (lineToCircle) {
+		counter++;
 	}
+}
 	// Sphere (3D)
 	if (circleToSphere) { 
 		if (ofGetKeyPressed(OF_KEY_DOWN)) { // register keypress down: move backwards into the sphere
@@ -117,7 +150,7 @@ void ofApp::draw(){
 	ofPushMatrix();
 	if (!lineToCircle) {
 		cylinder.setRadius(lineLength);
-	} 
+	}
 	ofRotateZ(90);
 	cylinder.setResolution(50, 50, 50);
 	cylinder.setCapped(false);
