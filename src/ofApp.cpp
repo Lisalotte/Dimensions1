@@ -63,14 +63,15 @@ void ofApp::update(){
 	// line (1D)
 	if (!lineToCircle) { 
 		if (ofGetKeyPressed(OF_KEY_UP) || ofGetKeyPressed(OF_KEY_DOWN)) { // only when up or down is pressed
-			//cam.orbit(0, angleV, distance);
-			allowCamRotate = true;
-			angleH = 0;
+			cam.orbit(0, angleV, distance);
+			//allowCamRotate = true;
+			//angleH = 0;
 			if (lineLength < 500) lineLength += 1;
-	}
+		}
 	}
 	// circle (2D)
 	else if (!circleToSphere) { // keep rotating the sphere
+		counter++;
 		cerr << angleH << endl;
 		cerr << counter << endl;
 		//if (angleH <= 90 && angleH >= -90) {
@@ -79,27 +80,23 @@ void ofApp::update(){
 
 		if (counter <= 180 ){
 			cerr << "countcountocunt" << endl;
-			angleV = 0;
-			allowCamRotate = true;
+			//angleV = 0;
+			//allowCamRotate = true;
+			cam.orbit(angleH, 0, distance);
 		}
 		else if (angleH < 90 && angleH > -90) { // als counter groter is dan 300 en de cirkel nog niet plat is
-			angleV = 0;
-			allowCamRotate = true;
-			cerr << "BLA" << endl;
+			//angleV = 0;
+			//allowCamRotate = true;
+			cam.orbit(angleH, 0, distance);
+			cerr << angleH << endl;
 		}
-	}
 		else { // switch to 3D
 			lineToCircle = false;
 			circleToSphere = true;
-
-	//cam.roll(roll);
-
-	if (lineToCircle) {
-		counter++;
+		}
 	}
-}
 	// Sphere (3D)
-	if (circleToSphere) { 
+	if (circleToSphere) {
 		if (ofGetKeyPressed(OF_KEY_DOWN)) { // register keypress down: move backwards into the sphere
 			if (z_self < 10) z_self++; // set maximum speed to 10
 		}
