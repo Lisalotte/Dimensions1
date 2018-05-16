@@ -41,6 +41,7 @@ void ofApp::setup(){
 
 //--------------------------------------------------------------
 void ofApp::update(){
+	allowCamRotate = false;
 	if (angleV >= 90 || angleV <= -90) {
 		lineToCircle = true;
 	}
@@ -89,7 +90,13 @@ void ofApp::draw(){
 	cam.begin(); // enable camera, everything onwards will appear on the screen
 
 	drawStars(); // draw background stars
-	cam.orbit(angleH, angleV, distance);
+	if (allowCamRotate) {
+		cam.orbit(angleH, angleV, distance);
+	}
+
+	if (circleToSphere) {
+		cam.dolly(z_self); // move along local z-axis in back of forward direction
+	}
 
 	ofPushMatrix(); // global positioning
 	/*
@@ -101,9 +108,6 @@ void ofApp::draw(){
 	ofRotateY(y_rot);
 	ofRotateZ(z_rot);
 	*/
-	if (circleToSphere) {
-		cam.dolly(z_self); // move along local z-axis in back of forward direction
-	}
 
 	ofPushMatrix(); // object positioning
 
