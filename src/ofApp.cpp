@@ -18,12 +18,14 @@ void ofApp::setup(){
 	lineLength = 1;
 	distance = 500.f;
 	roll = angleH = angleV = 0;
+	alpha = 0;
 
 	// setup the camera at initial viewing angles
 	cam.orbit(0, 0, distance);
 	cam.orbit(0, 0, distance);
 
 	allowCamRotate = false;
+	drawSphere = false;
 
 	for (int i = 0; i < 300; i++) {
 		float x = ofRandomf() * 2000 - 1000;
@@ -43,7 +45,7 @@ void ofApp::setup(){
 //--------------------------------------------------------------
 void ofApp::update(){
 	allowCamRotate = false;
-	if (angleV >= 90 || angleV <= -90) {
+	if (lineLength >= 300) {
 		lineToCircle = true;
 	}
 
@@ -72,14 +74,11 @@ void ofApp::update(){
 	// circle (2D)
 	else if (!circleToSphere) { // keep rotating the sphere
 		counter++;
-		cerr << angleH << endl;
-		cerr << counter << endl;
 		//if (angleH <= 90 && angleH >= -90) {
 		//	allowCamRotate = true;
 			//cam.orbit(angleH, angleV, distance);
 
 		if (counter <= 180 ){
-			cerr << "countcountocunt" << endl;
 			//angleV = 0;
 			//allowCamRotate = true;
 			cam.orbit(angleH, 0, distance);
@@ -98,12 +97,20 @@ void ofApp::update(){
 	// Sphere (3D)
 	if (circleToSphere) {
 		if (ofGetKeyPressed(OF_KEY_DOWN)) { // register keypress down: move backwards into the sphere
-			if (z_self < 10) z_self++; // set maximum speed to 10
+			//if (z_self < 10) z_self += 0.5; // set maximum speed to 10
+			cam.dolly(2);
 		}
 		else if (ofGetKeyPressed(OF_KEY_UP)) { // move forwards into the sphere 
-			if (z_self > -10) z_self--; // set maximum backwards speed to -10
+			//if (z_self > -10) z_self -= 0.5; // set maximum backwards speed to -10
+			cam.dolly(-2);
 		}
-		cerr << z_self << endl;
+		camPosition = cam.getGlobalPosition();
+		float z = camPosition[2];
+		if (z <= 0) {
+			cerr << z << endl;
+			if (alpha < 255) alpha++;
+			drawSphere = true;
+		}
 	}
 }
 
@@ -124,9 +131,9 @@ void ofApp::draw(){
 		cam.orbit(angleH, angleV, distance);
 	}
 
-	if (circleToSphere) {
-		cam.dolly(z_self); // move along local z-axis in back of forward direction
-	}
+	//if (circleToSphere) {
+	//	cam.dolly(z_self); // move along local z-axis in back of forward direction
+	//}
 
 	ofPushMatrix(); // global positioning
 	/*
@@ -146,12 +153,20 @@ void ofApp::draw(){
 
 	ofPushMatrix();
 	if (!lineToCircle) {
-		cylinder.setRadius(lineLength);
+		cerr << lineLength << endl;
+		cylinder.setRadius(lineLength/2);
 	}
 	ofRotateZ(90);
 	cylinder.setResolution(50, 50, 50);
 	cylinder.setCapped(false);
 	cylinder.draw();
+
+	if (drawSphere) {
+		ofSetColor(255, 255, 255, alpha);
+		ofDrawSphere(lineLength*0.5);
+	}
+	ofSetColor(255);
+	
 	ofPopMatrix();
 
 	ofPopMatrix(); // objects
@@ -167,10 +182,10 @@ void ofApp::draw(){
 void ofApp::keyPressed(int key) {
 	switch (key) {
 	case OF_KEY_LEFT:
-		if (lineToCircle) angleH += 1; // rotate around line -> circle
+		if (lineToCircle) angleH -= 1; // rotate around line -> circle
 		break;
 	case OF_KEY_RIGHT:
-		if (lineToCircle) angleH -= 1; // rotate around line -> circle
+		if (lineToCircle) angleH += 1; // rotate around line -> circle
 		break;
 	case OF_KEY_UP:
 		angleV -= 1;

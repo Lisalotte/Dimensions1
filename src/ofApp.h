@@ -9,10 +9,12 @@ class ofApp : public ofBaseApp{
 		ofCylinderPrimitive cylinder, cyline;
 		ofNode myNode;
 		ofCamera cam;
+		ofVec3f camPosition;
 		
 		float x_rot, y_rot, z_rot;
 		float x_self, y_self, z_self;
 		float lineLength, angleH, angleV, distance, roll;
+		float alpha;
 
 		float positions[300][3];
 		float sphericalPositions[300][3];
@@ -20,6 +22,7 @@ class ofApp : public ofBaseApp{
 		bool lineToCircle;
 		bool circleToSphere;
 		bool allowCamRotate;
+		bool drawSphere;
 		int counter;
 
 		void setup();
