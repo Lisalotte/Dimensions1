@@ -14,6 +14,8 @@ class ofApp : public ofBaseApp{
 		float x_self, y_self, z_self;
 		float lineLength, angleH, angleV, distance, roll;
 
+		float positions[100][3];
+
 		bool lineToCyl;
 
 		void setup();

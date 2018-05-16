@@ -14,6 +14,16 @@ void ofApp::setup(){
 	lineLength = 1;
 	distance = 500.f;
 	roll = angleH = angleV = 0;
+
+	for (int i = 0; i < 100; i++) {
+		float x = ofRandomf() * 500 - 250;
+		float y = ofRandomf() * 500 - 250;
+		float z = -1000;
+		cerr << x << y << z << endl;
+		positions[i][0] = x;
+		positions[i][1] = y;
+		positions[i][2] = z;
+	}
 }
 
 //--------------------------------------------------------------
@@ -39,8 +49,15 @@ void ofApp::draw(){
 	//glMatrixMode(GL_PROJECTION);
 	//cam.setFov(180);
 	//cam.setNearClip(1);
-	//cam.setFarClip(2000);
+	cam.setFarClip(2000);
 	cam.begin();
+
+	for (int i = 0; i < 100; i++) {
+		float x = positions[i][0];
+		float y = positions[i][1];
+		float z = positions[i][2];
+		ofDrawEllipse(ofPoint(x, y, z), 5, 5);
+	}
 
 	ofPushMatrix(); // global positioning
 	/*
