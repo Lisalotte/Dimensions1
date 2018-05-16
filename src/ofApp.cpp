@@ -31,11 +31,17 @@ void ofApp::update(){
 	if (angleV >= 90 || angleV <= -90) {
 		lineToCyl = true;
 	}
-	if (!lineToCyl) {
-		cam.orbit(0, angleV, distance);
+	if (!lineToCyl) { // line
+		if (ofGetKeyPressed(OF_KEY_UP) || ofGetKeyPressed(OF_KEY_DOWN)) { // only when up or down is presseda
+			cam.orbit(0, angleV, distance);
+			lineLength += 1;
+		}
 	}
-	else {
-		cam.orbit(angleH, 0, distance);
+	else { // circle
+		if (angleH <= 90) {
+			cerr << angleH << endl;
+			cam.orbit(angleH, 0, distance);
+		}
 	}
 	cam.roll(roll);
 }
@@ -56,7 +62,7 @@ void ofApp::draw(){
 		float x = positions[i][0];
 		float y = positions[i][1];
 		float z = positions[i][2];
-		ofDrawEllipse(ofPoint(x, y, z), 5, 5);
+		//ofDrawEllipse(ofPoint(x, y, z), 5, 5);
 	}
 
 	ofPushMatrix(); // global positioning
@@ -88,6 +94,7 @@ void ofApp::draw(){
 	ofLine(0, 0, 1000, 0, 0, -1000);
 	ofSetColor(255);
 	*/
+
 	ofPushMatrix();
 	if (!lineToCyl) {
 		cylinder.setRadius(lineLength);
@@ -114,10 +121,10 @@ void ofApp::draw(){
 void ofApp::keyPressed(int key) {
 	switch (key) {
 	case OF_KEY_LEFT:
-		angleH -= 1;
+		if (lineToCyl) angleH -= 1; // rotate around line -> circle
 		break;
 	case OF_KEY_RIGHT:
-		angleH += 1;
+		if (lineToCyl) angleH += 1; // rotate around line -> circle
 		break;
 	case OF_KEY_UP:
 		angleV += 1;
@@ -129,9 +136,6 @@ void ofApp::keyPressed(int key) {
 		roll++;
 		break;
 	}
-	if (angleV < 90 && angleV > -90) {
-		lineLength += 2;
-	} 
 }
 
 //--------------------------------------------------------------
