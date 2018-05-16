@@ -24,26 +24,52 @@ void ofApp::setup(){
 		positions[i][1] = y;
 		positions[i][2] = z;
 	}
+	counter = 0;
 }
 
 //--------------------------------------------------------------
-void ofApp::update(){
+void ofApp::update() {
 	if (angleV >= 90 || angleV <= -90) {
 		lineToCyl = true;
 	}
+
+	if (angleV == 360) {
+		angleV = 0;
+	}
+	if (angleH == 360) {
+		angleH = 0;
+	}
+	if (angleV == -360) {
+		angleV = 0;
+	}
+	if (angleH == -360) {
+		angleH = 0;
+	}
+	
 	if (!lineToCyl) { // line
 		if (ofGetKeyPressed(OF_KEY_UP) || ofGetKeyPressed(OF_KEY_DOWN)) { // only when up or down is presseda
-		cam.orbit(0, angleV, distance);
+			cam.orbit(0, angleV, distance);
 			lineLength += 1;
-	}
+		}
 	}
 	else { // circle
-		if (angleH <= 90) {
-			cerr << angleH << endl;
-		cam.orbit(angleH, 0, distance);
+		cerr << angleH << endl;
+		cerr << counter << endl;
+		if (counter <= 180 ){
+			cerr << "countcountocunt" << endl;
+			cam.orbit(angleH, 0, distance);
+		}
+		else if (angleH < 90 && angleH > -90) { // als counter groter is dan 300 en de cirkel nog niet plat is
+			cam.orbit(angleH, 0, distance);
+			cerr << "BLA" << endl;
+		}
 	}
+
+	//cam.roll(roll);
+
+	if (lineToCyl) {
+		counter++;
 	}
-	cam.roll(roll);
 }
 
 //--------------------------------------------------------------
