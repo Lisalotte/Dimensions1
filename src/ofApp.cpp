@@ -10,40 +10,70 @@ void ofApp::setup(){
 	cylinder.set(250, 1);
 	cyline.set(0.5, 500);
 
-	lineToCyl = false;
+	lineToCircle = false;
+	circleToSphere = false;
+
+	x_self = y_self = z_self = 0;
+
 	lineLength = 1;
 	distance = 500.f;
 	roll = angleH = angleV = 0;
+
+	// setup the camera at initial viewing angles
+	cam.orbit(0, 0, distance);
+	cam.orbit(0, 0, distance);
+
+	allowCamRotate = false;
 
 	for (int i = 0; i < 300; i++) {
 		float x = ofRandomf() * 2000 - 1000;
 		float y = ofRandomf() * 2000 - 1000;
 		float z = ofRandomf() * 2000 - 1000;
-		cerr << x << y << z << endl;
 		positions[i][0] = x;
 		positions[i][1] = y;
 		positions[i][2] = z;
+
+		sphericalPositions[i][0] = ofRandomuf() * 360;
+		sphericalPositions[i][1] = ofRandomuf() * 360;
+		sphericalPositions[i][2] = ofRandomuf() * 1000 + 1000;
 	}
 }
 
 //--------------------------------------------------------------
 void ofApp::update(){
 	if (angleV >= 90 || angleV <= -90) {
-		lineToCyl = true;
+		lineToCircle = true;
 	}
-	if (!lineToCyl) { // line
-		if (ofGetKeyPressed(OF_KEY_UP) || ofGetKeyPressed(OF_KEY_DOWN)) { // only when up or down is presseda
-		cam.orbit(0, angleV, distance);
-			lineLength += 1;
+	// line (1D)
+	if (!lineToCircle) { 
+		if (ofGetKeyPressed(OF_KEY_UP) || ofGetKeyPressed(OF_KEY_DOWN)) { // only when up or down is pressed
+			//cam.orbit(0, angleV, distance);
+			allowCamRotate = true;
+			angleH = 0;
+			if (lineLength < 500) lineLength += 1;
+		}
 	}
+	// circle (2D)
+	else if (!circleToSphere) { // keep rotating the sphere
+		if (angleH <= 90 && angleH >= -90) {
+			allowCamRotate = true;
+			//cam.orbit(angleH, angleV, distance);
+		}
+		else { // switch to 3D
+			lineToCircle = false;
+			circleToSphere = true;
+		}
 	}
-	else { // circle
-		if (angleH <= 90) {
-			cerr << angleH << endl;
-		cam.orbit(angleH, 0, distance);
+	// Sphere (3D)
+	if (circleToSphere) { 
+		if (ofGetKeyPressed(OF_KEY_DOWN)) { // register keypress down: move backwards into the sphere
+			if (z_self < 10) z_self++; // set maximum speed to 10
+		}
+		else if (ofGetKeyPressed(OF_KEY_UP)) { // move forwards into the sphere 
+			if (z_self > -10) z_self--; // set maximum backwards speed to -10
+		}
+		cerr << z_self << endl;
 	}
-	}
-	cam.roll(roll);
 }
 
 //--------------------------------------------------------------
@@ -55,15 +85,11 @@ void ofApp::draw(){
 	//glMatrixMode(GL_PROJECTION);
 	//cam.setFov(180);
 	//cam.setNearClip(1);
-	cam.setFarClip(2000);
-	cam.begin();
+	//cam.setFarClip(3000);
+	cam.begin(); // enable camera, everything onwards will appear on the screen
 
-	for (int i = 0; i < 300; i++) {
-		float x = positions[i][0];
-		float y = positions[i][1];
-		float z = positions[i][2];
-		ofDrawSphere(ofPoint(x, y, z), 2);
-	}
+	drawStars(); // draw background stars
+	cam.orbit(angleH, angleV, distance);
 
 	ofPushMatrix(); // global positioning
 	/*
@@ -75,33 +101,19 @@ void ofApp::draw(){
 	ofRotateY(y_rot);
 	ofRotateZ(z_rot);
 	*/
-
-	ofVec3f center = ofVec3f(0, 0, 0);
-	//cam.lookAt(center);
+	if (circleToSphere) {
+		cam.dolly(z_self); // move along local z-axis in back of forward direction
+	}
 
 	ofPushMatrix(); // object positioning
 
-	ofNoFill();
-	ofSetColor(255);
-
-	/*
-	// x,y,z-axes
-	ofSetColor(255, 0, 0);
-	ofLine(-1000, 0, 0, 1000, 0, 0);
-	ofSetColor(0, 255, 0);
-	ofLine(0, -1000, 0, 0, 1000, 0);
-	ofSetColor(0, 0, 255);
-	ofLine(0, 0, 1000, 0, 0, -1000);
-	ofSetColor(255);
-	*/
+	ofNoFill(); // disable fill color
+	ofSetColor(255); // set color to white
 
 	ofPushMatrix();
-	if (!lineToCyl) {
+	if (!lineToCircle) {
 		cylinder.setRadius(lineLength);
-		cerr << "LINE" << endl;
-	} else {
-		cerr << "NOT LINE" << endl;
-	}
+	} 
 	ofRotateZ(90);
 	cylinder.setResolution(50, 50, 50);
 	cylinder.setCapped(false);
@@ -121,19 +133,16 @@ void ofApp::draw(){
 void ofApp::keyPressed(int key) {
 	switch (key) {
 	case OF_KEY_LEFT:
-		if (lineToCyl) angleH -= 1; // rotate around line -> circle
+		if (lineToCircle) angleH += 1; // rotate around line -> circle
 		break;
 	case OF_KEY_RIGHT:
-		if (lineToCyl) angleH += 1; // rotate around line -> circle
+		if (lineToCircle) angleH -= 1; // rotate around line -> circle
 		break;
 	case OF_KEY_UP:
-		angleV += 1;
-		break;
-	case OF_KEY_DOWN:
 		angleV -= 1;
 		break;
-	case 'r':
-		roll++;
+	case OF_KEY_DOWN:
+		angleV += 1;
 		break;
 	}
 }
@@ -185,5 +194,28 @@ void ofApp::gotMessage(ofMessage msg){
 
 //--------------------------------------------------------------
 void ofApp::dragEvent(ofDragInfo dragInfo){ 
+
+}
+
+//--------------------------------------------------------------
+void ofApp::drawStars() { 
+
+	for (int i = 0; i < 300; i++) {
+		ofPushMatrix();
+		// azimuth
+		float rotate = sphericalPositions[i][0];
+		ofRotateX(sphericalPositions[i][0]);
+		// declination
+		ofRotateY(sphericalPositions[i][1]);
+		// radius
+		ofTranslate(sphericalPositions[i][2], 0, 0);
+		
+		//float x = positions[i][0];
+		//float y = positions[i][1];
+		//float z = positions[i][2];
+//		ofDrawSphere(ofPoint(x, y, z), 2);
+		ofDrawSphere(ofPoint(0, 0, 0), 2);
+		ofPopMatrix();
+	}
 
 }

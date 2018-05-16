@@ -15,8 +15,11 @@ class ofApp : public ofBaseApp{
 		float lineLength, angleH, angleV, distance, roll;
 
 		float positions[300][3];
+		float sphericalPositions[300][3];
 
-		bool lineToCyl;
+		bool lineToCircle;
+		bool circleToSphere;
+		bool allowCamRotate;
 
 		void setup();
 		void update();
@@ -33,5 +36,6 @@ class ofApp : public ofBaseApp{
 		void windowResized(int w, int h);
 		void dragEvent(ofDragInfo dragInfo);
 		void gotMessage(ofMessage msg);
+		void drawStars();
 		
 };
