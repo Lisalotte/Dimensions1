@@ -15,10 +15,10 @@ void ofApp::setup(){
 	distance = 500.f;
 	roll = angleH = angleV = 0;
 
-	for (int i = 0; i < 100; i++) {
-		float x = ofRandomf() * 500 - 250;
-		float y = ofRandomf() * 500 - 250;
-		float z = -1000;
+	for (int i = 0; i < 300; i++) {
+		float x = ofRandomf() * 2000 - 1000;
+		float y = ofRandomf() * 2000 - 1000;
+		float z = ofRandomf() * 2000 - 1000;
 		cerr << x << y << z << endl;
 		positions[i][0] = x;
 		positions[i][1] = y;
@@ -33,15 +33,15 @@ void ofApp::update(){
 	}
 	if (!lineToCyl) { // line
 		if (ofGetKeyPressed(OF_KEY_UP) || ofGetKeyPressed(OF_KEY_DOWN)) { // only when up or down is presseda
-			cam.orbit(0, angleV, distance);
+		cam.orbit(0, angleV, distance);
 			lineLength += 1;
-		}
+	}
 	}
 	else { // circle
 		if (angleH <= 90) {
 			cerr << angleH << endl;
-			cam.orbit(angleH, 0, distance);
-		}
+		cam.orbit(angleH, 0, distance);
+	}
 	}
 	cam.roll(roll);
 }
@@ -58,11 +58,11 @@ void ofApp::draw(){
 	cam.setFarClip(2000);
 	cam.begin();
 
-	for (int i = 0; i < 100; i++) {
+	for (int i = 0; i < 300; i++) {
 		float x = positions[i][0];
 		float y = positions[i][1];
 		float z = positions[i][2];
-		//ofDrawEllipse(ofPoint(x, y, z), 5, 5);
+		ofDrawSphere(ofPoint(x, y, z), 2);
 	}
 
 	ofPushMatrix(); // global positioning
