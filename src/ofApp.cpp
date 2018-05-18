@@ -10,9 +10,14 @@ void ofApp::setup(){
 	cylinder.set(250, 1);
 	cyline.set(0.5, 500);
 
+	firstTime = true;
 	lineToCircle = false;
 	circleToSphere = false;
 	blackHole = false;
+
+	lookat = 0;
+
+	blackHolePos = ofVec3f(0, 0, -10000);
 
 	x_self = y_self = z_self = 0;
 
@@ -21,6 +26,7 @@ void ofApp::setup(){
 	roll = angleH = angleV = 0;
 	alpha = 0;
 	firstAngle = 0;
+	sphereanglecounter = 0;
 
 	// setup the camera at initial viewing angles
 	cam.orbit(0, 0, distance);
@@ -28,7 +34,7 @@ void ofApp::setup(){
 
 	allowCamRotate = false;
 	drawSphere = false;
-
+	
 	for (int i = 0; i < 300; i++) {
 		float x = ofRandomf() * 2000 - 1000;
 		float y = ofRandomf() * 2000 - 1000;
@@ -41,7 +47,7 @@ void ofApp::setup(){
 		sphericalPositions[i][1] = ofRandomuf() * 360;
 		sphericalPositions[i][2] = ofRandomuf() * 1000 + 1000;
 	}
-	counter = 0;
+	counter = counter2 = 0;
 }
 
 //--------------------------------------------------------------
@@ -102,11 +108,11 @@ void ofApp::update(){
 		camPosition = cam.getGlobalPosition();
 		float distance = sqrtf(camPosition[0] * camPosition[0] + camPosition[1] * camPosition[1] + camPosition[2] * camPosition[2]);
 
-		if (distance <= lineLength*0.4) {
-			//cerr << z << endl;
-			if (alpha < 255) alpha++;
-			drawSphere = true;
-		}
+		//if (distance <= lineLength*0.4) {
+		//	cerr << "z" << distance << endl;
+		//	if (alpha < 255) alpha++;
+		//	drawSphere = true;
+		//}
 		if (!drawSphere) {
 			if (ofGetKeyPressed(OF_KEY_UP)) { // move forwards into the sphere 
 				//if (z_self > -10) z_self -= 0.5; // set maximum backwards speed to -10
@@ -117,24 +123,160 @@ void ofApp::update(){
 				cam.dolly(2);
 			}
 		}
-		else if (ofGetKeyPressed(OF_KEY_UP)) { // move forwards into the sphere 
-			if (distance >= lineLength*0.4) {
-				cam.tilt(2);
-				cam.dolly(-0.5);
+
+		if (!blackHole && distance <= 50) {
+			while (distance > 5) {
+				cam.setPosition(camPosition-camPosition.operator*(0.1));
+				camPosition = cam.getGlobalPosition();
+				distance = sqrtf(camPosition[0] * camPosition[0] + camPosition[1] * camPosition[1] + camPosition[2] * camPosition[2]);
 			}
-			else {
-				cam.dolly(-2);
+			cam.setPosition(ofPoint(0, 0, 0));
+			// rotate enabled
+			if (alpha < 255) {
+				alpha++;
+			}
+			drawSphere = true;
+		}
+
+		if (drawSphere) {
+			if (ofGetKeyPressed(OF_KEY_UP)) {
+				cam.tilt(1);
+			}
+			if (ofGetKeyPressed(OF_KEY_DOWN)) {
+				cam.tilt(-1);
+			}
+			if (ofGetKeyPressed(OF_KEY_LEFT)) {
+				cam.pan(1);
+			}
+			if (ofGetKeyPressed(OF_KEY_RIGHT)) {
+				cam.pan(-1);
+			}
+			counter2++;
+
+			if (counter2 > 120) {
+				blackHole = true;
+				if (alpha > 0) alpha--;
+				else {
+					drawSphere = false;
+					cerr << "yup";
+				}
 			}
 		}
-		else if (ofGetKeyPressed(OF_KEY_DOWN)) {
+		if (blackHole) {
+			camPosition = cam.getGlobalPosition();
+			/*float xx = pow(blackHolePos[0] - camPosition[0], 2);
+			float yy = pow(blackHolePos[1] - camPosition[1], 2);
+			float zz = pow(blackHolePos[2] - camPosition[2], 2);
+			float bhDistance = sqrt(xx + yy + zz);*/
+			float bhDistance = camPosition.distance(blackHolePos);
+			
+			ofPoint dir = cam.getLookAtDir();
+			dir = dir.normalize();
+			float xdir = -1 * dir[0];
+			float ydir = -1 * dir[1];
+			float zdir = -1 * (dir[2]);
+
+			if (firstTime) {
+				for (int j = 0; j < 500; j++) {
+					camPosition = cam.getGlobalPosition();
+					cam.lookAt(dir + (ofPoint(xdir, ydir, zdir - camPosition[2] - 1).operator/(500.0)));
+				}
+				cam.lookAt(ofPoint(0, 0, -10000));
+				firstTime = false;
+				time = 0;
+			}
+			
+			/* 
+			
+			float bhDistance = camPosition.distance(blackHolePos);
+			ofVec3f orientation = cam.getLookAtDir();		
+			cam.lookAt(orientation-orientation.operator*(0.1));
+			
+			*/
+			if (camPosition[2] > blackHolePos[2]) {
+				camPosition = cam.getGlobalPosition();
+				//bhDistance = camPosition.distance(blackHolePos);
+				cam.setPosition(camPosition + ofPoint(0,0,-5 - 0.01*time*time));
+				time = time + 1;
+			}
+			if (ofGetKeyPressed(OF_KEY_UP)) {
+				cam.tilt(1);
+			}
+			if (ofGetKeyPressed(OF_KEY_DOWN)) {
+				cam.tilt(-1);
+			}
+			if (ofGetKeyPressed(OF_KEY_LEFT)) {
+				cam.pan(1);
+			}
+			if (ofGetKeyPressed(OF_KEY_RIGHT)) {
+				cam.pan(-1);
+			}
+		}
+		/*
+		if (drawSphere) { // && distance >= lineLength*0.4) {
+			float theta = ofRadToDeg(sinh(camPosition[1] / distance)); // lineLength*0.5));
+			float phi = ofRadToDeg(tanh(camPosition[2] / camPosition[0]));
+		
 			if (distance >= lineLength*0.4) {
-				cam.tilt(-2);
-				cam.dolly(0.5);
+				if (ofGetKeyPressed(OF_KEY_UP)) { // move forwards into the sphere 
+					//theta = theta + 2;
+					//phi += 5;
+					cam.dolly(1);
+					cerr << "fw" << endl;
+				}
+				if (ofGetKeyPressed(OF_KEY_DOWN)) { // move forwards into the sphere 
+					//theta = theta - 2;
+					//phi -= 5;
+					cam.dolly(-1);
+					cerr << "bw" << endl;
+				}
 			}
 			else {
 				cam.dolly(2);
 			}
+
+			// 0 - 90
+			if (camPosition[0] >= 0 && camPosition[1] < 0) {
+				phi = phi + 0;
+			}
+			//  90 - 180
+			if (camPosition[0] < 0 && camPosition[1] < 0) {
+				phi = phi + 90;
+			}
+			// 180 - 270
+			if (camPosition[0] < 0 && camPosition[1] >= 0) {
+				phi = phi + 180;
+			}
+			//270 - 360
+			if (camPosition[0] >= 0 && camPosition[1] >= 0) {
+				phi = phi + 270;
+			}			
+
+			cerr << theta << ", " << phi << endl;
+
+			//float theta = (pos.angle(ofVec3f(0, 0, 0)));
+			
+			//look = camPosition.getNormalized();
+			//look2 = cam.getUpDir().getNormalized();
+			
+			//look = look.perpendicular(look2);
+			
+			theta = ofDegToRad(theta + 90);
+			phi = ofDegToRad(phi);
+			
+			look[0] = distance * sin(theta + 0) * cos(phi);
+			look[1] = distance * sin(theta + 0) * sin(phi);
+			look[2] = distance * cos(theta + 0);
+			//look = look + camPosition;
+
+			if (distance >= lineLength*0.5) {
+				//cam.lookAt(look);
+				//cam.move(look);
+			}
 		}
+		*/
+	
+		
 	}
 }
 
@@ -163,17 +305,16 @@ void ofApp::draw(){
 	ofPushMatrix(); // global positioning
 
 	ofPushMatrix(); // object positioning
-
+	
 	ofNoFill(); // disable fill color
 	ofSetColor(255); // set color to white
 
 	// BLACK HOLE IN YOUR FACE
 	if (blackHole) {
 		// at random orientation
-
 		float t, p;
 		ofVec3f goTo;
-		mesh.setMode(OF_PRIMITIVE_LINES);
+		mesh.setMode(OF_PRIMITIVE_POINTS);
 		for (int j = 0; j <= 360; j += 10) {
 			for (int i = 0; i < 140; i++) {
 				float R = lineMax*0.5;
@@ -185,11 +326,9 @@ void ofApp::draw(){
 				mesh.addVertex(goTo);
 			}
 
-			cerr << j << " ";
-
 			//float rad = lineMax*0.5;
 			float rad = 1;
-			for (int i = 0; i < 200; i++) {
+			for (int i = 0; i < 1000; i++) {
 				glPushMatrix();
 				ofTranslate(goTo);
 				ofRotateZ(float(j));
@@ -197,57 +336,28 @@ void ofApp::draw(){
 				ofVec3f first = goTo;
 
 				t = 140 * 0.0174533;
-				p = 0;
+				p = float(j* 0.0174533);
 				first.operator*(rad);
 				//ofVec3f second(sin(t) * cos(p), sin(t) * sin(p), cos(t));
-				ofVec3f second(goTo[0] - 30 * rad * cos(p), goTo[1] + 0, goTo[2] - 30 * rad);
+				ofVec3f second(goTo[0] - 50 * rad * sin(t) * cos(p), goTo[1] + 0, goTo[2] - 30 * rad);
 
 				//second.operator*(rad);
 				t = 160 * 0.0174533;
-				ofVec3f third(goTo[0] - 15 * rad  * cos(p), goTo[1], goTo[2] - 500 * rad);
+				ofVec3f third(goTo[0] - 50 * rad * sin(t) * cos(p), goTo[1], goTo[2] - 50 * rad);
 
 				//ofVec3f third(1.5 * sin(t) * cos(p), -2 * sin(t) * sin(p), cos(t));
 				//third.operator*(rad);
 				t = 180 * 0.0174533;
-				ofVec3f fourth(goTo[0] - 30 * rad * cos(p), goTo[1], goTo[2] - 10000 * rad);
+				ofVec3f fourth(goTo[0] - 100 * rad * sin(t) * cos(p), goTo[1], goTo[2] - 15000 * rad);
 				//ofVec3f fourth(1.5 * sin(t) * cos(p), -5 * sin(t) * sin(p), cos(t));
 
 				//fourth.operator*(rad);
-				float time = float(i) / 200.0;
+				float time = float(i) / 1000.0;
 				mesh.addVertex(CalculateBezier(time, first, second, third, fourth));
 				glPopMatrix();
 			}
 		}
 		mesh.draw();
-		/*
-		ofVec3f top(100.0, 50.0, 0.0);
-		ofVec3f left(50.0, 150.0, 0.0);
-		ofVec3f right(150.0, 150.0, 0.0);
-
-		mesh.addVertex(top);
-		mesh.addVertex(left);
-		mesh.addVertex(right);
-		mesh.draw();
-		*/
-		// deform circle into tunnel
-		ofSetLineWidth(5);
-		float R = lineMax*0.5;
-		t = 0;
-		p = 0;
-		ofPushMatrix();
-		ofTranslate(0, R, 0);
-		goTo[0] = R * sin(t) * cos(p);
-		goTo[0] = R;
-		goTo[1] = R * sin(t) * sin(p);
-		goTo[1] = 0;
-		goTo[2] = R * cos(t);
-		goTo[2] = 0;
-		cerr << goTo[0] << goTo[1] << goTo[2] << endl;
-		line.curveTo(goTo, 30);
-		line.draw();
-		ofSetLineWidth(1);
-		ofPopMatrix();
-
 	}
 
 	ofPushMatrix();

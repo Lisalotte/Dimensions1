@@ -12,12 +12,14 @@ class ofApp : public ofBaseApp{
 		ofVec3f camPosition;
 		ofPolyline line;
 		ofMesh mesh;
+		ofVec3f look, look2, blackHolePos;
 		
 		float x_rot, y_rot, z_rot;
 		float x_self, y_self, z_self;
 		float lineLength, angleH, angleV, distance, roll;
 		float alpha;
 		float firstAngle;
+		float lookat;
 		const float lineMax = 300;
 		const int delayMax = 1000;
 
@@ -29,7 +31,11 @@ class ofApp : public ofBaseApp{
 		bool allowCamRotate;
 		bool drawSphere;
 		bool blackHole;
-		int counter, delayer;
+		int counter, counter2;
+		int sphereanglecounter;
+
+		bool firstTime;
+		float time;
 
 		void setup();
 		void update();
